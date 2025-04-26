@@ -54,7 +54,7 @@ public class PartnerServiceImpl implements IPartnerService
     @Override
     public int insertPartner(Partner partner)
     {
-        //使用sprngSecurity工具类，对前端传入的代码加密
+        //使用sprngSecurity工具类对前端传入的代码加密
         partner.setPassword(SecurityUtils.encryptPassword(partner.getPassword()));
         partner.setCreateTime(DateUtils.getNowDate());
         return partnerMapper.insertPartner(partner);
