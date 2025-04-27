@@ -70,9 +70,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 LEFT JOIN
             tb_vending_machine v ON n.id = v.node_id
         <where>
-            <if test="nodeName != null  and nodeName != ''"> and node_name like concat('%', #{nodeName}, '%')</if>
-            <if test="regionId != null "> and region_id = #{regionId}</if>
-            <if test="partnerId != null "> and partner_id = #{partnerId}</if>
+            <if test="nodeName != null  and nodeName != ''"> and n.node_name like concat('%', #{nodeName}, '%')</if>
+            <if test="regionId != null "> and n.region_id = #{regionId}</if>
+            <if test="partnerId != null "> and n.partner_id = #{partnerId}</if>
         </where>
         GROUP BY
             n.id
