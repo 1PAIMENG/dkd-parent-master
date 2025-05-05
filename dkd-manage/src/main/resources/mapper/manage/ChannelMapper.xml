@@ -65,6 +65,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
+    <insert id="batchInsertChannel" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_channel (channel_code, vm_id, inner_code, max_capacity, current_capacity, last_supply_time, create_time, update_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.channelCode},
+                #{item.vmId},
+                #{item.innerCode},
+                #{item.maxCapacity},
+                #{item.currentCapacity},
+                #{item.lastSupplyTime},
+                #{item.createTime},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
     <update id="updateChannel" parameterType="Channel">
         update tb_channel
         <trim prefix="SET" suffixOverrides=",">
