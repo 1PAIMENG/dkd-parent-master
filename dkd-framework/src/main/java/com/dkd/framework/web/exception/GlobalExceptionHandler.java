@@ -146,6 +146,9 @@ public class GlobalExceptionHandler
         if (e.getMessage().contains("foreign")){
             return AjaxResult.error("无法删除，有其他数据引用");
         }
+        if (e.getMessage().contains("Duplicate")){//数据库中商品名称设置成了唯一性约束
+            return AjaxResult.error("数据已存在，请勿重复添加");
+        }
         return AjaxResult.error("数据完整性异常，请联系管理员");
         //return AjaxResult.error("数据完整性异常，请联系管理员");
     }
