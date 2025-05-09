@@ -47,7 +47,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectVendingMachineVo"/>
         where id = #{id}
     </select>
-        
+
     <insert id="insertVendingMachine" parameterType="VendingMachine" useGeneratedKeys="true" keyProperty="id">
         insert into tb_vending_machine
         <trim prefix="(" suffix=")" suffixOverrides=",">
