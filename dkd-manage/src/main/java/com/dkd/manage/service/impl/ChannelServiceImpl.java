@@ -1,7 +1,12 @@
 package com.dkd.manage.service.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import com.dkd.common.utils.DateUtils;
+import com.dkd.manage.domain.ChannelVo;
+import com.dkd.manage.domain.dto.ChannelConfigDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.dkd.manage.mapper.ChannelMapper;
@@ -113,5 +118,38 @@ public class ChannelServiceImpl implements IChannelService
     @Override
     public int countChannelBySkuIds(Long[] skuIds) {
         return channelMapper.countChannelBySkuIds(skuIds);
+    }
+
+    /**
+     * 根据innerCode(售货机编号）查询货道列表
+     * @param innerCode
+     * @return 货道列表
+     */
+    @Override
+    public List<ChannelVo> selectChannelVoListByInnerCode(String innerCode) {
+        return channelMapper.selectChannelVoListByInnerCode(innerCode);
+    }
+
+    /**
+     * 货道关联商品
+     * @param channelConfigDto
+     * @return 结果
+     */
+    @Override
+    public int setChannel(ChannelConfigDto channelConfigDto) {
+        //将dto转为po对象
+       List<Channel> channelList =channelConfigDto.getChannelList().stream().map(dto->{
+                   //根据售货机和货道编号查询货道信息
+                   Channel channel = channelMapper.getChannelInfo(dto.getInnerCode(),dto.getChannelCode());
+                   if(channel != null){
+                       //关联最新的商品id
+                       channel.setSkuId(dto.getSkuId());
+                       //更新货道修改时间
+                       channel.setUpdateTime(DateUtils.getNowDate());
+                   }
+                   return channel;
+               }).collect(Collectors.toList());
+        //批量更新货道
+        return channelMapper.batchUpdateChannels(channelList);
     }
 }
