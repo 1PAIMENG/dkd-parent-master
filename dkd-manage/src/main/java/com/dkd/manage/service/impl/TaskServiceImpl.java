@@ -145,6 +145,7 @@ public class TaskServiceImpl implements ITaskService
     @Transactional
     @Override
     public int insetTaskDto(TaskDto taskDto) {
+        System.out.println(taskDto);
         //查询售货机id是否存在
         VendingMachine vendingMachine = vendingMachineService.selectVendingMachineByInnerCode(taskDto.getInnerCode());
         if (vendingMachine == null) {
@@ -163,34 +164,60 @@ public class TaskServiceImpl implements ITaskService
         if (!emp.getRegionId().equals(vendingMachine.getRegionId())) {
             throw new ServiceException("员工区域与售货机区域不匹配");
         }
+        //1-5 是为了防止前端篡改提交的数据
         //6.将dto转换为task对象
         Task task= BeanUtil.copyProperties(taskDto,Task.class);//属性复制
         task.setTaskStatus(DkdContants.TASK_STATUS_CREATE);//工单状态为创建
         task.setUserName(emp.getUserName());//执行人名称
         task.setRegionId(vendingMachine.getRegionId());//执行人区域
         task.setAddr(vendingMachine.getAddr());//执行人地址
-        task.setUpdateTime(DateUtils.getNowDate());//更新时间
+        task.setCreateTime(DateUtils.getNowDate());//创建时间
         //生成并获取当天的工单编号
         task.setTaskCode(generateTaskCode());//工单编号
         int taskResult = taskMapper.insertTask(task);
         //7.如果是补货工单，则插入工单详情
         if (taskDto.getProductTypeId().equals(DkdContants.TASK_TYPE_SUPPLY)){
             List<TaskDetailsDto> details = taskDto.getDetails();
+//            System.out.println("------------------------------------------");
+//            System.out.println(details);
             if(CollUtil.isEmpty(details)){
                 throw new ServiceException("补货工单详情不能为空");
             }
             //将details中的数据转换为taskDetails对象
-            List taskDetailsList =details.stream().map(taskDetailsDto -> {
-                TaskDetails taskDetails=  BeanUtil.copyProperties(taskDetailsDto, TaskDetails.class);
+            List<TaskDetails> taskDetailsList =details.stream().map(dto -> {
+                TaskDetails taskDetails=  BeanUtil.copyProperties(dto, TaskDetails.class);
                 taskDetails.setTaskId(task.getTaskId());
                 return taskDetails;
             }).collect((Collectors.toList()));
+
 
            //批量新增
             taskDetailsService.batchInsertTaskDetails(taskDetailsList);
         }
         return taskResult;
     }
+
+    /**
+     * 取消工单
+     * @param task
+     * @return 结果
+     */
+    @Override
+    public int cancelTask(Task task) {
+        //判断工单状态是否可以取消
+        Task taskDb = taskMapper.selectTaskByTaskId(task.getTaskId());
+        if (taskDb.getTaskStatus().equals(DkdContants.TASK_STATUS_CANCEL)){
+            throw new ServiceException("该工单已取消,不能再次取消");
+        }
+        //判断工单状态是否为已完成
+        if (taskDb.getTaskStatus().equals(DkdContants.TASK_STATUS_FINISH)){
+            throw new ServiceException("该工单已完成,不能取消");
+        }
+        task.setUpdateTime(DateUtils.getNowDate());
+        task.setTaskStatus(DkdContants.TASK_STATUS_CANCEL);
+        return taskMapper.updateTask(task);//task 当中含有desc备注说明
+    }
+
     //生成并获取当天的工单编号
     private String generateTaskCode(){
         //获取当前日期并格式化为yyyymmdd

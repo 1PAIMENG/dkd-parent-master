@@ -65,6 +65,7 @@
             <groupId>com.dkd</groupId>
             <artifactId>dkd-manage</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

@@ -101,4 +101,15 @@ public class TaskDetailsController extends BaseController
     {
         return toAjax(taskDetailsService.deleteTaskDetailsByDetailsIds(detailsIds));
     }
+
+    /**
+     * 根据工单id查询工单详情列表
+     */
+    @PreAuthorize("@ss.hasPermi('manage:taskDetails:list')")
+    @GetMapping("/byTaskId/{taskId}")
+    public AjaxResult byTaskId(@PathVariable Long taskId){
+        TaskDetails taskDetails = new TaskDetails();
+        taskDetails.setTaskId(taskId);
+        return success(taskDetailsService.selectTaskDetailsList(taskDetails));
+    }
 }
